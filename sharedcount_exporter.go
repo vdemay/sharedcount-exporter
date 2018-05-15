@@ -66,17 +66,18 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
-	log.Infof("sharedcount exporter starting")
 	if e.Client == nil {
 		log.Errorf("sharedcount client not configured.")
 		return
 	}
-
-	metrics := e.Client.Metrics()
-	ch <- prometheus.MustNewConstMetric(quota_used_today, prometheus.GaugeValue, metrics.Quota_used_today)
-	ch <- prometheus.MustNewConstMetric(quota_remaining_today, prometheus.GaugeValue, metrics.Quota_remaining_today)
-	ch <- prometheus.MustNewConstMetric(quota_allocated_today, prometheus.GaugeValue, metrics.Quota_allocated_today)
-	log.Infof("sharedcount exporter finished")
+	metrics, err := e.Client.Metrics()
+	if (err != nil) {
+		log.Errorf("Error Requesting Shared Count : %s", err)
+	} else {
+		ch <- prometheus.MustNewConstMetric(quota_used_today, prometheus.GaugeValue, metrics.Quota_used_today)
+		ch <- prometheus.MustNewConstMetric(quota_remaining_today, prometheus.GaugeValue, metrics.Quota_remaining_today)
+		ch <- prometheus.MustNewConstMetric(quota_allocated_today, prometheus.GaugeValue, metrics.Quota_allocated_today)
+	}
 }
 
 func init() {

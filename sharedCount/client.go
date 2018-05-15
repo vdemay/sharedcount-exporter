@@ -10,7 +10,7 @@ import (
 
 // Client defines the Speedtest client
 type Client struct {
-	data string
+	apiKey string
 }
 
 type Response struct {
@@ -21,31 +21,30 @@ type Response struct {
 }
 
 func NewClient(apiKey string) (*Client, error) {
+	log.Infof("Retrieve configuration")
+	// TODO check API Key
+	return &Client{
+		apiKey: apiKey,
+	}, nil
+}
 
-	log.Debug("Retrieve configuration")
-	url := fmt.Sprintf("https://scoopit.sharedcount.com/v1.0/quota?apikey=%s", apiKey)
-	log.Debug(url)
+func (client *Client) Metrics() (Response, error) {
+	result := Response{}
+
+	url := fmt.Sprintf("https://scoopit.sharedcount.com/v1.0/quota?apikey=%s", client.apiKey)
 	response, err := http.Get(url)
 
 	if err != nil {
-		return nil, err
+		return result, err
 	} else {
 		defer response.Body.Close()
 		contents, err := ioutil.ReadAll(response.Body)
 		if err != nil {
-			return nil, err
+			return result, err
 		} else {
-			log.Debug(string(contents))
-			return &Client{
-				data: string(contents),
-			}, nil
+			json.Unmarshal([]byte(contents), &result)
+			return result, nil
 		}
 	}
-	return nil, nil
-}
-
-func (client *Client) Metrics() Response {
-	result := Response{}
-	json.Unmarshal([]byte(client.data), &result)
-	return result
+	return result, nil
 }
