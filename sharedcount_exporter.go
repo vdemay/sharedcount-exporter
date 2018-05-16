@@ -12,7 +12,7 @@ import (
 	"github.com/prometheus/common/log"
 	prom_version "github.com/prometheus/common/version"
 
-	"github.com/vdemay/sharedcount-exporter/sharedCount"
+	"github.com/vdemay/sharedcount_exporter/sharedCount"
 )
 
 const (
@@ -71,7 +71,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		return
 	}
 	metrics, err := e.Client.Metrics()
-	if (err != nil) {
+	if err != nil {
 		log.Errorf("Error Requesting Shared Count : %s", err)
 	} else {
 		ch <- prometheus.MustNewConstMetric(quota_used_today, prometheus.GaugeValue, metrics.Quota_used_today)
